@@ -7,6 +7,12 @@
 #include <compel/plugins/std/syscall-codes.h>
 #include <compel/asm/sigframe.h>
 
+#ifdef CONFIG_32BIT
+#define SUBU    subu
+#else
+#define SUBU    dsubu
+#endif
+
 static inline void restore_tls(tls_t *ptls)
 {
 	/* clang-format off */
@@ -32,7 +38,7 @@ static inline int set_compat_robust_list(uint32_t head_ptr, uint32_t len)
 			     thread_args, clone_restore_fn)      \
     asm volatile(						 \
 		 "ld    $5,%2	\n"	/* a1 = new_sp */	 \
-		 "dsubu $5,32	\n"				 \
+		 "SUBU $5,32	\n"				 \
 		 "sd    %5,0($5)	\n"				 \
 		 "sd    %6,8($5)	\n"			 \
 		 "sd    %1,16($5)   \n"				\

@@ -645,7 +645,7 @@ static long restore_self_exe_late(struct task_restore_args *args)
 #ifndef ARCH_HAS_SHMAT_HOOK
 unsigned long arch_shmat(int shmid, void *shmaddr, int shmflg, unsigned long size)
 {
-	return sys_shmat(shmid, shmaddr, shmflg);
+	return (unsigned long) sys_shmat(shmid, shmaddr, shmflg);
 }
 #endif
 
@@ -708,7 +708,7 @@ static unsigned long restore_mapping(VmaEntry *vma_entry)
 	 * writable since we're going to restore page
 	 * contents.
 	 */
-	addr = sys_mmap(decode_pointer(vma_entry->start), vma_entry_len(vma_entry), prot, flags, vma_entry->fd,
+	addr = (unsigned long) sys_mmap(decode_pointer(vma_entry->start), vma_entry_len(vma_entry), prot, flags, vma_entry->fd,
 			vma_entry->pgoff);
 
 	if ((vma_entry->fd != -1) && (vma_entry->status & VMA_CLOSE))
@@ -735,7 +735,7 @@ static int restore_aio_ring(struct rst_aio_ring *raio)
 	unsigned size;
 	char buf[1];
 
-	ret = sys_io_setup(raio->nr_req, &ctx);
+	ret = (int) sys_io_setup(raio->nr_req, &ctx);
 	if (ret < 0) {
 		pr_err("Ring setup failed with %d\n", ret);
 		return -1;
@@ -779,7 +779,7 @@ static int restore_aio_ring(struct rst_aio_ring *raio)
 	 * may be any. We submit count identical requests.
 	 */
 	size = sizeof(struct iocb) + maxr * sizeof(struct iocb *);
-	iocb = (void *)sys_mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+	iocb = sys_mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
 	iocbp = (void *)iocb + sizeof(struct iocb);
 
 	if (IS_ERR(iocb)) {
@@ -836,7 +836,7 @@ populate:
 	 * Also, this unmaps temporary anonymous area on raio->addr.
 	 */
 
-	ctx = sys_mremap(ctx, raio->len, raio->len, MREMAP_FIXED | MREMAP_MAYMOVE, raio->addr);
+	ctx = (unsigned long) sys_mremap(ctx, raio->len, raio->len, MREMAP_FIXED | MREMAP_MAYMOVE, raio->addr);
 	if (ctx != raio->addr) {
 		pr_err("Ring remap failed with %ld\n", ctx);
 		return -1;
@@ -944,20 +944,20 @@ static int vma_remap(VmaEntry *vma_entry, int uffd)
 		unsigned long addr;
 
 		/* Map guard page (step 2) */
-		tmp = sys_mmap((void *)guard, PAGE_SIZE, PROT_NONE, MAP_PRIVATE | MAP_ANONYMOUS, 0, 0);
+		tmp = (unsigned long) sys_mmap((void *)guard, PAGE_SIZE, PROT_NONE, MAP_PRIVATE | MAP_ANONYMOUS, 0, 0);
 		if (tmp != guard) {
 			pr_err("Unable to map a guard page %lx (%lx)\n", guard, tmp);
 			return -1;
 		}
 
 		/* Move src to non-overlapping place (step 3) */
-		addr = sys_mmap(NULL, len, PROT_NONE, MAP_PRIVATE | MAP_ANONYMOUS, 0, 0);
+		addr = (unsigned long) sys_mmap(NULL, len, PROT_NONE, MAP_PRIVATE | MAP_ANONYMOUS, 0, 0);
 		if (addr == (unsigned long)MAP_FAILED) {
 			pr_err("Unable to reserve memory (%lx)\n", addr);
 			return -1;
 		}
 
-		tmp = sys_mremap(src, len, len, MREMAP_MAYMOVE | MREMAP_FIXED, addr);
+		tmp = (unsigned long) sys_mremap(src, len, len, MREMAP_MAYMOVE | MREMAP_FIXED, addr);
 		if (tmp != addr) {
 			pr_err("Unable to remap %lx -> %lx (%lx)\n", src, addr, tmp);
 			return -1;
@@ -966,7 +966,7 @@ static int vma_remap(VmaEntry *vma_entry, int uffd)
 		src = addr;
 	}
 
-	tmp = sys_mremap(src, len, len, MREMAP_MAYMOVE | MREMAP_FIXED, dst);
+	tmp = (unsigned long) sys_mremap(src, len, len, MREMAP_MAYMOVE | MREMAP_FIXED, dst);
 	if (tmp != dst) {
 		pr_err("Unable to remap %lx -> %lx\n", src, dst);
 		return -1;
@@ -1042,7 +1042,9 @@ static int create_posix_timers(struct task_restore_args *args)
 #ifdef __GLIBC__
 		sev._sigev_un._tid = args->posix_timers[i].spt.notify_thread_id;
 #else
+        /* Support added from musl 1.2.2
 		sev.sigev_notify_thread_id = args->posix_timers[i].spt.notify_thread_id;
+        */
 #endif
 		sev.sigev_value.sival_ptr = args->posix_timers[i].spt.sival_ptr;
 

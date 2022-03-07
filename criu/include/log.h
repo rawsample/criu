@@ -56,10 +56,6 @@ void flush_early_log_buffer(int fd);
 
 #define pr_debug(fmt, ...) print_on_level(LOG_DEBUG, LOG_PREFIX fmt, ##__VA_ARGS__)
 
-#ifndef CR_NOGLIBC
-
 #define pr_perror(fmt, ...) pr_err(fmt ": %s\n", ##__VA_ARGS__, strerror(errno))
-
-#endif /* CR_NOGLIBC */
 
 #endif /* __CR_LOG_H__ */

@@ -23,9 +23,9 @@ unsigned long arch_shmat(int shmid, void *shmaddr, int shmflg, unsigned long siz
 
 	/* SHMLBA-aligned, direct call shmat() */
 	if (!((unsigned long)shmaddr & (SHMLBA - 1)))
-		return sys_shmat(shmid, shmaddr, shmflg);
+		return (unsigned long) sys_shmat(shmid, shmaddr, shmflg);
 
-	smap = sys_shmat(shmid, NULL, shmflg);
+	smap = (unsigned long) sys_shmat(shmid, NULL, shmflg);
 	if (IS_ERR_VALUE(smap)) {
 		pr_err("shmat() with NULL shmaddr failed: %d\n", (int)smap);
 		return smap;
@@ -40,7 +40,7 @@ unsigned long arch_shmat(int shmid, void *shmaddr, int shmflg, unsigned long siz
 	pr_warn("Make sure that you don't migrate shmem from non-VIPT cached CPU to VIPT cached \n");
 	pr_warn("Otherwise YOU HAVE A CHANCE OF DATA CORRUPTIONS in writeable shmem\n");
 
-	smap = sys_mremap(smap, size, size, MREMAP_FIXED | MREMAP_MAYMOVE, (unsigned long)shmaddr);
+	smap = (unsigned long) sys_mremap(smap, size, size, MREMAP_FIXED | MREMAP_MAYMOVE, (unsigned long)shmaddr);
 	if (IS_ERR_VALUE(smap))
 		pr_err("mremap() for shmem failed: %d\n", (int)smap);
 	return smap;

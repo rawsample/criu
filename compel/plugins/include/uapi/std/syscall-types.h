@@ -40,6 +40,7 @@ struct rusage;
 struct iocb;
 struct pollfd;
 struct clone_args;
+struct rlimit64;
 
 typedef unsigned long aio_context_t;
 

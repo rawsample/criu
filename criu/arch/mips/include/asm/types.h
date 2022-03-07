@@ -22,9 +22,18 @@ typedef UserMipsRegsEntry UserRegsEntry;
 
 static inline u64 encode_pointer(void *p)
 {
+#ifdef CONFIG_32BIT
+    return (u32)p;
+#else
 	return (u64)p;
+#endif
 }
+
+#ifdef CONFIG_32BIT
+static inline void *decode_pointer(u32 v)
+#else
 static inline void *decode_pointer(u64 v)
+#endif
 {
 	return (void *)v;
 }

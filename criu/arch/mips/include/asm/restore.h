@@ -15,7 +15,7 @@
 		"nop   						\n"	\
 		:							\
 		:"r"(task_args),"r"(restore_task_exec_start),		\
-		 "g"(new_sp)						\
+		 "r"(new_sp)						\
 		: "$25", "$4","$5")
 /* clang-format on */
 

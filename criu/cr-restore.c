@@ -22,8 +22,6 @@
 #include <compel/ptrace.h>
 #include "common/compiler.h"
 
-#include "linux/mount.h"
-
 #include "clone-noasan.h"
 #include "cr_options.h"
 #include "servicefd.h"
@@ -1671,10 +1669,7 @@ static int mount_proc(void)
 	if (root_ns_mask == 0)
 		fd = ret = open("/proc", O_DIRECTORY);
 	else {
-		if (kdat.has_fsopen)
-			fd = ret = mount_detached_fs("proc");
-		else
-			fd = ret = __legacy_mount_proc();
+        fd = ret = __legacy_mount_proc();
 	}
 
 	if (fd >= 0) {

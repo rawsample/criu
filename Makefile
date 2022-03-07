@@ -78,6 +78,16 @@ endif
 
 ifeq ($(ARCH),mips)
         DEFINES		:= -DCONFIG_MIPS
+        DEFINES		+= -DCR_DEBUG
+
+		# To avoid breaking existing compatibility,
+		# mips64el is the default configuration unless otherwise state.
+        ifeq ($(SUBARCH),mips32)
+                DEFINES		+= -DCONFIG_32BIT
+                USERCFLAGS	+= -march=mips32r2
+        else
+                DEFINES		+= -DCONFIG_64BIT
+        endif
 endif
 
 #

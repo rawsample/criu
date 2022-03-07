@@ -66,7 +66,6 @@ struct kerndat_s {
 	bool x86_has_ptrace_fpu_xsave_bug;
 	bool has_inotify_setnextwd;
 	bool has_kcmp_epoll_tfd;
-	bool has_fsopen;
 	bool has_clone3_set_tid;
 	bool has_timens;
 	bool has_newifindex;

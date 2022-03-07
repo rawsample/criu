@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <sched.h>
 #include <unistd.h>
+#include <errno.h>
 
 #include <compel/plugins/std/syscall-codes.h>
 

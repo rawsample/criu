@@ -27,8 +27,6 @@
 #include <netinet/tcp.h>
 #include <sched.h>
 
-#include "linux/mount.h"
-
 #include "kerndat.h"
 #include "page.h"
 #include "util.h"
@@ -1385,25 +1383,7 @@ void print_stack_trace(pid_t pid)
 
 int mount_detached_fs(const char *fsname)
 {
-	int fsfd, fd;
-
-	fsfd = sys_fsopen(fsname, 0);
-	if (fsfd < 0) {
-		pr_perror("Unable to open the %s file system", fsname);
-		return -1;
-	}
-
-	if (sys_fsconfig(fsfd, FSCONFIG_CMD_CREATE, NULL, NULL, 0) < 0) {
-		pr_perror("Unable to create the %s file system", fsname);
-		close(fsfd);
-		return -1;
-	}
-
-	fd = sys_fsmount(fsfd, 0, 0);
-	if (fd < 0)
-		pr_perror("Unable to mount the %s file system", fsname);
-	close(fsfd);
-	return fd;
+	return -1;
 }
 
 int strip_deleted(char *name, int len)

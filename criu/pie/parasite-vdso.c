@@ -32,7 +32,7 @@ static int remap_one(char *who, unsigned long *from, unsigned long to, size_t si
 
 	pr_debug("Remap %s %lx -> %lx\n", who, *from, to);
 
-	addr = sys_mremap(*from, size, size, MREMAP_MAYMOVE | MREMAP_FIXED, to);
+	addr = (unsigned long) sys_mremap(*from, size, size, MREMAP_MAYMOVE | MREMAP_FIXED, to);
 	if (addr != to) {
 		pr_err("Unable to remap %lx -> %lx %lx\n", *from, to, addr);
 		return -1;

@@ -33,6 +33,7 @@ static inline unsigned page_shift(void)
 
 extern unsigned page_size(void);
 #define PAGE_SIZE page_size()
+#define PAGE_MASK  (~(PAGE_SIZE - 1))
 
 #endif /* CR_NOGLIBC */
 

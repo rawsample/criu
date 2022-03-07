@@ -3,6 +3,7 @@
 #include <sys/auxv.h>
 #include <sys/mman.h>
 #include <errno.h>
+#include <string.h>
 
 #include <compel/asm/fpu.h>
 #include <compel/cpu.h>
@@ -191,7 +192,7 @@ void *remote_mmap(struct parasite_ctl *ctl, void *addr, size_t length, int prot,
 	long map;
 	int err;
 
-	err = compel_syscall(ctl, __NR_mmap, &map, (unsigned long)addr, length, prot, flags, fd, offset >> PAGE_SHIFT);
+	err = compel_syscall(ctl, __NR_mmap, &map, (unsigned long)addr, length, prot, flags, fd, offset);
 
 	if (err < 0 || IS_ERR_VALUE(map)) {
 		pr_err("remote mmap() failed: %s\n", strerror(-map));
@@ -237,10 +238,15 @@ int ptrace_flush_breakpoints(pid_t pid)
 	return 0;
 }
 
-/*refer to kernel linux-3.10/arch/mips/include/asm/processor.h*/
+/* refer to kernel linux-3.10/arch/mips/include/asm/processor.h */
+#ifdef CONFIG_32BIT
+#define TASK_SIZE 0x80000000UL
+
+#else 
 #define TASK_SIZE32 0x7fff8000UL
 #define TASK_SIZE64 0x10000000000UL
 #define TASK_SIZE   TASK_SIZE64
+#endif  /* CONFIG_32BIT */
 
 unsigned long compel_task_size(void)
 {

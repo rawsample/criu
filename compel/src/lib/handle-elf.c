@@ -19,6 +19,7 @@
 #ifdef CONFIG_MIPS
 #include "ldsodefs.h"
 #endif
+
 /* Check if pointer is out-of-bound */
 static bool __ptr_oob(const uintptr_t ptr, const uintptr_t start, const size_t size)
 {
@@ -149,6 +150,7 @@ int __handle_elf(void *mem, size_t size)
 #endif
 	int ret = -EINVAL;
 	unsigned long data_off = 0;
+
 
 	pr_debug("Header\n");
 	pr_debug("------------\n");

@@ -26,7 +26,6 @@
 #include "images/core.pb-c.h"
 #include "images/cgroup.pb-c.h"
 #include "kerndat.h"
-#include "linux/mount.h"
 
 /*
  * This structure describes set of controller groups
@@ -560,37 +559,15 @@ static int __new_open_cgroupfs(struct cg_ctl *cc)
 	int fsfd, fd;
 	char *name;
 
-	fsfd = sys_fsopen(fstype, 0);
-	if (fsfd < 0) {
-		pr_perror("Unable to open the cgroup file system");
-		return -1;
-	}
-
 	if (strstartswith(cc->name, namestr)) {
-		if (sys_fsconfig(fsfd, FSCONFIG_SET_STRING, "name", cc->name + strlen(namestr), 0)) {
-			pr_perror("Unable to configure the cgroup (%s) file system", cc->name);
-			goto err;
-		}
 	} else if (cc->name[0] != 0) { /* cgroup v1 */
 		char *saveptr = NULL, *buf = strdupa(cc->name);
 		name = strtok_r(buf, ",", &saveptr);
 		while (name) {
-			if (sys_fsconfig(fsfd, FSCONFIG_SET_FLAG, name, NULL, 0)) {
-				pr_perror("Unable to configure the cgroup (%s) file system", name);
-				goto err;
-			}
 			name = strtok_r(NULL, ",", &saveptr);
 		}
 	}
 
-	if (sys_fsconfig(fsfd, FSCONFIG_CMD_CREATE, NULL, NULL, 0)) {
-		pr_perror("Unable to create the cgroup (%s) file system", cc->name);
-		goto err;
-	}
-
-	fd = sys_fsmount(fsfd, 0, 0);
-	if (fd < 0)
-		pr_perror("Unable to mount the cgroup (%s) file system", cc->name);
 	close(fsfd);
 
 	return fd;
@@ -605,9 +582,6 @@ static int open_cgroupfs(struct cg_ctl *cc)
 	char prefix[] = ".criu.cgmounts.XXXXXX";
 	char mopts[1024];
 	int fd;
-
-	if (kdat.has_fsopen)
-		return __new_open_cgroupfs(cc);
 
 	if (strstartswith(cc->name, namestr))
 		snprintf(mopts, sizeof(mopts), "none,%s", cc->name);

@@ -48,7 +48,12 @@ $$(obj)/$(1).built-in.o: $$(LDS) $$(compel_plugins)
 
 $$(obj)/$(1)-blob.h: $$(obj)/$(1).built-in.o
 	$$(call msg-gen, $$@)
-	$$(Q) $$(COMPEL_BIN) hgen -f $$< -o $$@
+	@#$$(Q) $$(COMPEL_BIN) hgen -l4 -f $$< -o $$@
+
+	$$(info [HOOKED] $$(COMPEL_BIN) hgen -l4 -f $$< -o $$@)
+	@# Please generate the blob on a host with similar endianness
+	$$(info  > cp pre-built blobs)
+	@cp ../$(1)-blob.h $$@
 
 all-y		+= $$(obj)/$(1)-blob.h
 cleanup-y	+= $$(obj)/$(1)-blob.h

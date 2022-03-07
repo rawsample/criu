@@ -4,9 +4,16 @@ arch/arm/plugins/std/syscalls/syscalls.S
 arch/aarch64/plugins/std/syscalls/syscalls.S
 arch/s390/plugins/std/syscalls/syscalls.S
 arch/ppc64/plugins/std/syscalls/syscalls.S
+arch/mips/plugins/std/sys-exec-tbl-32.c
+arch/mips/plugins/std/sys-exec-tbl-64.c
+arch/mips/plugins/std/syscalls-32.S
+arch/mips/plugins/std/syscalls-64.S
+arch/mips/plugins/std/syscalls/syscalls.S
 include/version.h
 plugins/include/uapi/std/asm/syscall-types.h
+plugins/include/uapi/std/syscall-32.h
 plugins/include/uapi/std/syscall-64.h
+plugins/include/uapi/std/syscall-codes-32.h
 plugins/include/uapi/std/syscall-codes-64.h
 plugins/include/uapi/std/syscall-codes.h
 plugins/include/uapi/std/syscall.h
