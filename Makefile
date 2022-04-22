@@ -83,7 +83,7 @@ ifeq ($(ARCH),mips)
 		# To avoid breaking existing compatibility,
 		# mips64el is the default configuration unless otherwise state.
         ifeq ($(SUBARCH),mips32)
-                DEFINES		+= -DCONFIG_32BIT
+                DEFINES		+= -DCONFIG_32BIT -DCONFIG_VDSO_32
                 USERCFLAGS	+= -march=mips32r2
         else
                 DEFINES		+= -DCONFIG_64BIT
