@@ -1209,18 +1209,29 @@ int kerndat_init(void)
 	preload_socket_modules();
 	preload_netfilter_modules();
 
+    /* HB fail : no /proc/[pid]/pagemap file
 	if (check_pagemap()) {
 		pr_err("check_pagemap failed when initializing kerndat.\n");
 		ret = -1;
 	}
+    */
+    pr_info("[HueBridge] kerndat_init(): disable pagemap\n");
+    kdat.pmap = PM_DISABLED;
+
 	if (!ret && kerndat_get_shmemdev()) {
 		pr_err("kerndat_get_shmemdev failed when initializing kerndat.\n");
 		ret = -1;
 	}
+
+    /* HB fail : no /proc/[pid]/pagemap file
 	if (!ret && kerndat_get_dirty_track()) {
 		pr_err("kerndat_get_dirty_track failed when initializing kerndat.\n");
 		ret = -1;
 	}
+    */
+    pr_info("[HueBridge] kerndat_init(): set has_dirty_track to false\n");
+    kdat.has_dirty_track = false;
+
 	if (!ret && init_zero_page_pfn()) {
 		pr_err("init_zero_page_pfn failed when initializing kerndat.\n");
 		ret = -1;
@@ -1229,10 +1240,17 @@ int kerndat_init(void)
 		pr_err("get_last_cap failed when initializing kerndat.\n");
 		ret = -1;
 	}
+
+    /* HB fail : no /proc/locks file
 	if (!ret && kerndat_fdinfo_has_lock()) {
 		pr_err("kerndat_fdinfo_has_lock failed when initializing kerndat.\n");
 		ret = -1;
 	}
+    */
+    pr_info("[HueBridge] kerndat_init(): set has_fdinfo_lock to false\n");
+    kdat.has_fdinfo_lock = false;
+    return 0;
+
 	if (!ret && get_task_size()) {
 		pr_err("get_task_size failed when initializing kerndat.\n");
 		ret = -1;
@@ -1285,11 +1303,17 @@ int kerndat_init(void)
 		pr_err("kerndat_uffd failed when initializing kerndat.\n");
 		ret = -1;
 	}
+
+    /* HB fail
 	if (!ret && kerndat_has_thp_disable()) {
 		pr_err("kerndat_has_thp_disable failed when initializing kerndat.\n");
 		ret = -1;
 	}
+    */
+    pr_info("[HueBridge] kernedat_init(): PR_SET_THP_DISABLE is not available\n");
+
 	/* Needs kdat.compat_cr filled before */
+    /* HB patch: in criu/pie/utils-vdso.c fix ELF header for big endian */
 	if (!ret && kerndat_vdso_fill_symtable()) {
 		pr_err("kerndat_vdso_fill_symtable failed when initializing kerndat.\n");
 		ret = -1;
