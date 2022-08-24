@@ -1,6 +1,8 @@
 #include <sys/types.h>
 #include <sys/uio.h>
+#if !defined(__UCLIBC__)
 #include <sys/auxv.h>
+#endif
 #include <sys/mman.h>
 #include <errno.h>
 #include <string.h>
