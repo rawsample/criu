@@ -11,6 +11,8 @@
 #define COMPEL_TYPE_MIPS_HIGHER	 (1u << 6)
 #define COMPEL_TYPE_MIPS_HIGHEST (1u << 7)
 #define COMPEL_TYPE_MIPS_64	 (1u << 8)
+#define COMPEL_TYPE_MIPS_32	 (1u << 9)
+#define COMPEL_TYPE_MIPS_CALL16	 (1u << 10)
 #endif
 typedef struct {
 	unsigned int offset;

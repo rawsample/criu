@@ -21,13 +21,20 @@
 #include "log.h"
 #include "common/bug.h"
 
+
 /*
  * Injected syscall instruction
+ * mips32 is Big Endian
  * mips64el is Little Endian
  */
 const char code_syscall[] = {
+#ifdef CONFIG_32BIT
+	0x00, 0x00, 0x00, 0x0c, /* syscall    */
+	0x00, 0x00, 0x00, 0x0d /*  break      */
+#else
 	0x0c, 0x00, 0x00, 0x00, /* syscall    */
 	0x0d, 0x00, 0x00, 0x00 /*  break      */
+#endif
 };
 
 /* 10-byte legacy floating point register */
@@ -180,12 +187,15 @@ int compel_syscall(struct parasite_ctl *ctl, int nr, long *ret, unsigned long ar
 	regs.regs[5] = arg2;
 	regs.regs[6] = arg3;
 	regs.regs[7] = arg4;
+#ifdef CONFIG_32BIT
+    //TODO: put the rest of arguments on the user stack
+#else
 	regs.regs[8] = arg5;
 	regs.regs[9] = arg6;
+#endif
 
 	err = compel_execute_syscall(ctl, &regs, code_syscall);
 	*ret = regs.regs[2];
-
 	return err;
 }
 
@@ -212,7 +222,7 @@ void parasite_setup_regs(unsigned long new_ip, void *stack, user_regs_struct_t *
 	regs->cp0_epc = new_ip;
 	if (stack) {
 		/* regs[29] is sp */
-		regs->regs[29] = (unsigned long)stack;
+		regs->MIPS_sp = (unsigned long)stack;
 	}
 }
 

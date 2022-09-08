@@ -540,9 +540,9 @@ static int parasite_trap(struct parasite_ctl *ctl, pid_t pid, user_regs_struct_t
 		goto err;
 	}
 
-	if (WSTOPSIG(status) != SIGTRAP || siginfo.si_code != ARCH_SI_TRAP) {
+	if (WSTOPSIG(status) != SIGTRAP || siginfo.si_code != ARCH_SI_TRAP
+            || siginfo.si_code != 128) {    /* Quick dirty fix for mips32 big en endian */
 		pr_debug("** delivering signal %d si_code=%d\n", siginfo.si_signo, siginfo.si_code);
-
 		pr_err("Unexpected %d task interruption, aborting\n", pid);
 		goto err;
 	}
@@ -574,6 +574,7 @@ int compel_execute_syscall(struct parasite_ctl *ctl, user_regs_struct_t *regs, c
 		pr_err("Can't inject syscall blob (pid: %d)\n", pid);
 		return -1;
 	}
+
 
 	err = parasite_run(pid, PTRACE_CONT, ctl->ictx.syscall_ip, 0, regs, &ctl->orig);
 	if (!err)
@@ -1138,6 +1139,14 @@ out:
  */
 static int make_sock_for(int pid)
 {
+    int sk = -1;
+	pr_debug("Preparing seqsk for %d\n", pid);
+    /* Patch Hue
+     * Hue bridge does not have any network namespace
+     *
+     * TODO: Check the target has the network namespace before
+     * attempting to change.
+     *
 	int ret, mfd, fd, sk = -1;
 	char p[32];
 
@@ -1160,11 +1169,13 @@ static int make_sock_for(int pid)
 		pr_perror("Can't setup target netns");
 		goto out_cm;
 	}
+    */
 
 	sk = socket(PF_UNIX, SOCK_SEQPACKET | SOCK_NONBLOCK, 0);
 	if (sk < 0)
 		pr_perror("Can't create seqsk");
 
+    /* Patch Hue
 	ret = setns(mfd, CLONE_NEWNET);
 	if (ret) {
 		pr_perror("Can't restore former netns");
@@ -1177,6 +1188,7 @@ out_cm:
 out_c:
 	close(fd);
 out:
+    */
 	return sk;
 }
 
@@ -1299,7 +1311,11 @@ err:
 
 static bool task_in_parasite(struct parasite_ctl *ctl, user_regs_struct_t *regs)
 {
+#ifdef CONFIG_32BIT
+    void *addr = (void *)(unsigned long)REG_IP(*regs);
+#else
 	void *addr = (void *)REG_IP(*regs);
+#endif
 	return addr >= ctl->remote_map && addr < ctl->remote_map + ctl->map_length;
 }
 

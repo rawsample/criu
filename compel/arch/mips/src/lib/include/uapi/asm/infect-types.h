@@ -16,24 +16,24 @@
  */
 typedef struct {
 	/* Saved main processor registers. */
-	unsigned long regs[32];
+	__u64 regs[32];
 
 	/* Saved special registers. */
-	unsigned long lo;
-	unsigned long hi;
-	unsigned long cp0_epc;
-	unsigned long cp0_badvaddr;
-	unsigned long cp0_status;
-	unsigned long cp0_cause;
+	__u64 hi;
+	__u64 lo;
+	__u64 cp0_epc;
+	__u64 cp0_badvaddr;
+	__u64 cp0_status;
+	__u64 cp0_cause;
 } user_regs_struct_t;
 
 /* from linux-3.10/arch/mips/kernel/ptrace.c */
 typedef struct {
 	/* Saved fpu registers. */
-	unsigned long regs[32];
+	__u64 regs[32];
 
-	unsigned int fpu_fcr31;
-	unsigned int fpu_id;
+	__u64 fpu_fcr31;
+	__u64 fpu_id;
 
 } user_fpregs_struct_t;
 

@@ -3,6 +3,7 @@
 
 
 #ifdef CONFIG_32BIT
+#define ELF_MIPSO32
 #include "elf32-types.h"
 #define __handle_elf			     handle_elf_mips32
 

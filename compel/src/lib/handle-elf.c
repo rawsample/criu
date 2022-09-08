@@ -335,6 +335,14 @@ int __handle_elf(void *mem, size_t size)
 					pr_err("Unexpected undefined symbol:%s\n", name);
 					goto err;
 				}
+#elif defined(ELF_MIPSO32)
+                /* On MIPS O32 ABI _gp_disp is a magic symbol designates offset between
+                 * start of function and 'gp' pointer into GOT.
+                 */
+                if (strncmp(name, "_gp_disp", 8)) {
+					pr_err("Unexpected undefined symbol:%s\n", name);
+					goto err;
+				}
 #else
 				pr_err("Unexpected undefined symbol: `%s'. External symbol in PIE?\n", name);
 				goto err;
@@ -475,6 +483,9 @@ int __handle_elf(void *mem, size_t size)
 				       ".addend = %-8d, .value = 0x%-16x, }, /* R_MIPS_LO16 */\n",
 				       (unsigned int)place, addend32, value32);
 				break;
+
+            case R_MIPS_CALL16:
+                break;
 
 #endif
 #ifdef ELF_PPC64
