@@ -708,9 +708,11 @@ int parse_smaps(pid_t pid, struct vm_area_list *vma_area_list, dump_filemap_t du
 
 	vm_area_list_init(vma_area_list);
 
+    /* Hue Bridge
 	f.fd = open_proc(pid, "smaps");
 	if (f.fd < 0)
 		goto err_n;
+    */
 
 	if (bfdopenr(&f))
 		goto err_n;
@@ -724,7 +726,9 @@ int parse_smaps(pid_t pid, struct vm_area_list *vma_area_list, dump_filemap_t du
 		bool eof;
 		char *str;
 
+        /* Hue Bridge
 		str = breadline(&f);
+        */
 		if (IS_ERR(str))
 			goto err;
 		eof = (str == NULL);

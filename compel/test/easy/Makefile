@@ -1,0 +1,56 @@
+#
+# Philips Hue bridge bsb002 
+HUE_DIR				?= /home/sampl/projects/shattr-paper/philips-hue-bsb002/qsdk
+TOOLCHAIN_PATH      ?= $(HUE_DIR)/staging_dir/toolchain-mips_34kc_gcc-4.8-linaro_uClibc-1.0.14/bin
+STAGING_DIR         ?= "$(HUE_DIR)/staging_dir"
+
+SSH_HUE 			?= toor@169.254.8.129
+
+INSTALL_DIR			?= /home/sampl/projects/shattr-paper/criu/mips/install
+INCLUDE_DIR			?= $(INSTALL_DIR)/usr/local/include
+INCLUDE_COMPEL		:= /home/sampl/projects/shattr-paper/criu/mips/criu/compel/include/uapi
+
+# ****************************************************************************
+
+TOOLCHAIN_PREFIX    := mips-openwrt-linux-
+TOOLCHAIN   		:= $(TOOLCHAIN_PATH)/$(TOOLCHAIN_PREFIX)
+PATH    			:= $(PATH):$(TOOLCHAIN_PATH)/
+
+export STAGING_DIR
+export DEBUG			:= 1
+
+
+CC	:= $(TOOLCHAIN)gcc
+LD  := $(TOOLCHAIN)ld
+
+CFLAGS	?= -O2 -g -Wall -Werror -I$(INCLUDE_COMPEL) -DCONFIG_MIPS -DCONFIG_32BIT -mabi=32
+
+COMPEL		:= ../../../compel/compel-host
+#COMPEL 		:= compel
+COMPEL_INCLUDES		:=
+COMPEL_STATIC_LIBS	:= $(INSTALL_DIR)/usr/local/lib/x86_64-linux-gnu/libcompel.a
+
+
+
+all: victim spy
+
+run:
+	./spy
+.PHONY: run
+
+clean:
+	rm -f victim
+	rm -f spy
+
+victim: victim.c
+	$(CC) $(CFLAGS) -o $@ $^
+
+spy: spy.c 
+	$(CC) $(CFLAGS) $(COMPEL_INCLUDES) -o $@ $< $(COMPEL_STATIC_LIBS)
+
+
+scp-hue: victim spy
+	sshpass -proot scp ./spy $(SSH_HUE):~
+	sshpass -proot scp ./victim $(SSH_HUE):~
+	#sshpass -proot ssh $(SSH_HUE) "./spy"
+

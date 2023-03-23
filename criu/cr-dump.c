@@ -660,9 +660,11 @@ int get_task_ids(struct pstree_item *item)
 	task_kobj_ids_entry__init(item->ids);
 
 	if (item->pid->state != TASK_DEAD) {
+        /* Hue Bridge
 		ret = dump_task_kobj_ids(item);
 		if (ret)
 			goto err_free;
+        */
 
 		ret = dump_task_ns_ids(item);
 		if (ret)
@@ -1809,38 +1811,51 @@ int cr_dump_tasks(pid_t pid)
 	if (!root_item)
 		goto err;
 	root_item->pid->real = pid;
+    pr_debug("[HB] a\n");
 
 	pre_dump_ret = run_scripts(ACT_PRE_DUMP);
 	if (pre_dump_ret != 0) {
 		pr_err("Pre dump script failed with %d!\n", pre_dump_ret);
 		goto err;
 	}
+    pr_debug("[HB] b\n");
 	if (init_stats(DUMP_STATS))
 		goto err;
+    pr_debug("[HB] c\n");
 
 	if (cr_plugin_init(CR_PLUGIN_STAGE__DUMP))
 		goto err;
+    pr_debug("[HB] d\n");
 
 	if (lsm_check_opts())
 		goto err;
+    pr_debug("[HB] e\n");
 
 	if (irmap_load_cache())
 		goto err;
+    pr_debug("[HB] f\n");
 
 	if (cpu_init())
 		goto err;
+    pr_debug("[HB] g\n");
 
 	if (vdso_init_dump())
 		goto err;
+    pr_debug("[HB] h\n");
 
 	if (cgp_init(opts.cgroup_props, opts.cgroup_props ? strlen(opts.cgroup_props) : 0, opts.cgroup_props_file))
 		goto err;
+    pr_debug("[HB] i\n");
 
+    /* HB
 	if (parse_cg_info())
 		goto err;
+    */
+    pr_debug("[HB] j\n");
 
 	if (prepare_inventory(&he))
 		goto err;
+    pr_debug("[HB] k\n");
 
 	if (opts.cpu_cap & CPU_CAP_IMAGE) {
 		if (cpu_dump_cpuinfo())
@@ -1849,9 +1864,11 @@ int cr_dump_tasks(pid_t pid)
 
 	if (connect_to_page_server_to_send() < 0)
 		goto err;
+    pr_debug("[HB] l\n");
 
 	if (setup_alarm_handler())
 		goto err;
+    pr_debug("[HB] m\n");
 
 	/*
 	 * The collect_pstree will also stop (PTRACE_SEIZE) the tasks
@@ -1861,36 +1878,54 @@ int cr_dump_tasks(pid_t pid)
 
 	if (collect_pstree())
 		goto err;
+    pr_debug("[HB] n\n");
 
 	if (collect_pstree_ids())
 		goto err;
+    pr_debug("[HB] o\n");
 
 	if (network_lock())
 		goto err;
+    pr_debug("[HB] p\n");
 
+    /* Hue Bridge
+     * /proc/locks not available on device
 	if (collect_file_locks())
 		goto err;
+    */
+    pr_debug("[HB] q\n");
 
+    /* Hue Bridge
 	if (collect_namespaces(true) < 0)
 		goto err;
+    */
+    pr_debug("[HB] r\n");
 
 	glob_imgset = cr_glob_imgset_open(O_DUMP);
 	if (!glob_imgset)
 		goto err;
+    pr_debug("[HB] s\n");
 
+    /* Hue Bridge
 	if (seccomp_collect_dump_filters() < 0)
 		goto err;
+    */
+    pr_debug("[HB] t\n");
 
 	/* Errors handled later in detect_pid_reuse */
 	parent_ie = get_parent_inventory();
 
+    /* Hue Bridge
 	if (collect_and_suspend_lsm() < 0)
 		goto err;
+    */
+    pr_debug("[HB] u\n");
 
 	for_each_pstree_item(item) {
 		if (dump_one_task(item, parent_ie))
 			goto err;
 	}
+    pr_debug("[HB] v\n");
 
 	if (parent_ie) {
 		inventory_entry__free_unpacked(parent_ie, NULL);
@@ -1905,22 +1940,29 @@ int cr_dump_tasks(pid_t pid)
 	 */
 	if (dead_pid_conflict())
 		goto err;
+    pr_debug("[HB] w\n");
 
 	/* MNT namespaces are dumped after files to save remapped links */
 	if (dump_mnt_namespaces() < 0)
 		goto err;
+    pr_debug("[HB] x\n");
 
 	if (dump_file_locks())
 		goto err;
+    pr_debug("[HB] y\n");
 
 	if (dump_verify_tty_sids())
 		goto err;
+    pr_debug("[HB] z\n");
 
+    /* Hue Bridge */
 	if (dump_zombies())
 		goto err;
+    pr_debug("[HB] aa\n");
 
 	if (dump_pstree(root_item))
 		goto err;
+    pr_debug("[HB] ab\n");
 
 	/*
 	 * TODO: cr_dump_shmem has to be called before dump_namespaces(),
@@ -1931,37 +1973,45 @@ int cr_dump_tasks(pid_t pid)
 	ret = cr_dump_shmem();
 	if (ret)
 		goto err;
+    pr_debug("[HB] ac\n");
 
 	if (root_ns_mask) {
 		ret = dump_namespaces(root_item, root_ns_mask);
 		if (ret)
 			goto err;
 	}
+    pr_debug("[HB] ad\n");
 
 	if ((root_ns_mask & CLONE_NEWTIME) == 0) {
 		ret = dump_time_ns(0);
 		if (ret)
 			goto err;
 	}
+    pr_debug("[HB] ae\n");
 
 	if (dump_aa_namespaces() < 0)
 		goto err;
+    pr_debug("[HB] af\n");
 
 	ret = dump_cgroups();
 	if (ret)
 		goto err;
+    pr_debug("[HB] ag\n");
 
 	ret = fix_external_unix_sockets();
 	if (ret)
 		goto err;
+    pr_debug("[HB] ah\n");
 
 	ret = tty_post_actions();
 	if (ret)
 		goto err;
+    pr_debug("[HB] ai\n");
 
 	ret = inventory_save_uptime(&he);
 	if (ret)
 		goto err;
+    pr_debug("[HB] aj\n");
 
 	he.has_pre_dump_mode = false;
 

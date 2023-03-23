@@ -1438,22 +1438,22 @@ int cr_check(void)
 	 * confusing when there are many warnings and error messages.
 	 */
 	CHECK_CAT1(check_map_files());
-	CHECK_CAT1(check_sock_diag());
-	CHECK_CAT1(check_ns_last_pid());
+	CHECK_CAT1(check_sock_diag());          // HB fail because CONFIG_NETLINK_DIAG
+	CHECK_CAT1(check_ns_last_pid());        // HB fail
 	CHECK_CAT1(check_sock_peek_off());
-	CHECK_CAT1(check_kcmp());
-	CHECK_CAT1(check_prctl_cat1());
-	CHECK_CAT1(check_fcntl());
+	CHECK_CAT1(check_kcmp());               // HB fail
+	CHECK_CAT1(check_prctl_cat1());         // HB fail
+	CHECK_CAT1(check_fcntl());              // HB fail
 	CHECK_CAT1(check_proc_stat());
 	CHECK_CAT1(check_tcp());
-	CHECK_CAT1(check_fdinfo_ext());
+	CHECK_CAT1(check_fdinfo_ext());         // HB fail at inotify
 	CHECK_CAT1(check_unaligned_vmsplice());
 	CHECK_CAT1(check_tty());
 	CHECK_CAT1(check_so_gets());
-	CHECK_CAT1(check_ipc());
+	CHECK_CAT1(check_ipc());                // HB fail
 	CHECK_CAT1(check_sigqueuinfo());
 	CHECK_CAT1(check_ptrace_peeksiginfo());
-	CHECK_CAT1(check_special_mapping_mremap());
+	CHECK_CAT1(check_special_mapping_mremap()); // HB fail
 
 	/*
 	 * Category 2 - required for specific cases.

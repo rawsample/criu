@@ -1,0 +1,84 @@
+#
+# Philips Hue bridge bsb002 
+HUE_DIR				?= /home/sampl/projects/shattr-paper/philips-hue-bsb002/qsdk
+TOOLCHAIN_PATH      ?= $(HUE_DIR)/staging_dir/toolchain-mips_34kc_gcc-4.8-linaro_uClibc-1.0.14/bin
+STAGING_DIR         ?= "$(HUE_DIR)/staging_dir"
+SSH_HUE 			?= toor@169.254.8.129
+
+# Lima toolchaind
+LIMA_DIR		?= /home/sampl/projects/shattr-paper/criu/mips/lima
+#TOOLCHAIN_PATH 	?= $(LIMA_DIR)/staging_dir/toolchain-mips_24kc_gcc-7.5.0_musl/bin
+#STAGING_DIR 	?= $(LIMA_DIR)/staging_dir
+SSH_LIMA		:= root@192.168.1.1
+
+
+SSH_REMOTE 	:= $(SSH_HUE)
+
+INSTALL_DIR			?= /home/sampl/projects/shattr-paper/criu/mips/install
+INCLUDE_DIR			?= $(INSTALL_DIR)/usr/local/include
+INCLUDE_COMPEL		:= /home/sampl/projects/shattr-paper/criu/mips/criu/compel/include/uapi
+
+# ****************************************************************************
+
+TOOLCHAIN_PREFIX    := mips-openwrt-linux-
+TOOLCHAIN   		:= $(TOOLCHAIN_PATH)/$(TOOLCHAIN_PREFIX)
+PATH    			:= $(PATH):$(TOOLCHAIN_PATH)/
+
+export STAGING_DIR
+export DEBUG			:= 1
+
+
+CC	:= $(TOOLCHAIN)gcc
+LD  := $(TOOLCHAIN)ld
+
+CFLAGS	?= -O2 -g -Wall -Werror -I$(INCLUDE_COMPEL) -DCONFIG_MIPS -DCONFIG_32BIT -mabi=32
+
+COMPEL		:= ../../../compel/compel-host
+#COMPEL 		:= compel
+COMPEL_INCLUDES		:=
+COMPEL_STATIC_LIBS	:= $(INSTALL_DIR)/usr/local/lib/x86_64-linux-gnu/libcompel.a
+COMPEL_PLUGINS		:= $(INSTALL_DIR)/usr/local/libexec/compel/std.lib.a
+COMPEL_LDFLAGS 		:= -r -z noexecstack -T $(INSTALL_DIR)/usr/local/libexec/compel/scripts/compel-pack.lds.S
+COMPEL_CFLAGS 		:= -Wstrict-prototypes -ffreestanding -fno-stack-protector -nostdlib -fomit-frame-pointer -fpie
+
+
+
+all: victim spy
+
+run:
+	./spy
+.PHONY: run
+
+clean:
+	rm -f victim
+	rm -f spy
+	rm -f parasite.h
+	rm -f parasite.po
+	rm -f parasite.o
+
+victim: victim.c
+	$(CC) $(CFLAGS) -o $@ $^
+
+spy: spy.c parasite.h
+	$(CC) $(CFLAGS) $(COMPEL_INCLUDES) -o $@ $< $(COMPEL_STATIC_LIBS)
+
+parasite.h: parasite.po
+	#$(COMPEL) hgen -o $@ -f $<
+	sshpass -proot scp ./parasite.po $(SSH_REMOTE):~
+	sshpass -proot ssh $(SSH_REMOTE) "./compel hgen -o $@ -f $<"
+	sshpass -proot scp $(SSH_REMOTE):~/parasite.h ./parasite.h
+
+parasite.po: parasite.o
+	$(LD) $(COMPEL_LDFLAGS) -o $@ $^ $(COMPEL_PLUGINS)
+
+parasite.o: parasite.c
+	$(CC) $(CFLAGS) -c $(COMPEL_CFLAGS) -o $@ $^
+
+
+scp-hue: victim spy
+	sshpass -proot scp ./spy $(SSH_REMOTE):~
+	sshpass -proot scp ./victim $(SSH_REMOTE):~
+
+
+fix:
+	/home/sampl/projects/shattr-paper/philips-hue-bsb002/qsdk/staging_dir/toolchain-mips_34kc_gcc-4.8-linaro_uClibc-1.0.14/bin/mips-openwrt-linux-gcc -O2 -g -Wall -Werror -I/home/sampl/projects/shattr-paper/criu/mips/criu/compel/include/uapi -DCONFIG_32BIT -mabi=32  -o spy spy.c /home/sampl/projects/shattr-paper/criu/mips/install/usr/local/lib/x86_64-linux-gnu/libcompel.a
